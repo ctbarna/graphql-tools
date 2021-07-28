@@ -63,7 +63,7 @@ export interface DelegationContext<TContext = Record<string, any>> {
   rootValue?: any;
   transforms: Array<Transform<any, TContext>>;
   transformedSchema: GraphQLSchema;
-  skipTypeMerging: boolean;
+  onLocatedError?: (originalError: GraphQLError) => GraphQLError;
 }
 
 export interface IDelegateToSchemaOptions<TContext = Record<string, any>, TArgs = Record<string, any>> {
@@ -72,6 +72,7 @@ export interface IDelegateToSchemaOptions<TContext = Record<string, any>, TArgs 
   operation?: OperationTypeNode;
   fieldName?: string;
   returnType?: GraphQLOutputType;
+  onLocatedError?: (originalError: GraphQLError) => GraphQLError;
   args?: TArgs;
   selectionSet?: SelectionSetNode;
   fieldNodes?: ReadonlyArray<FieldNode>;
@@ -81,7 +82,6 @@ export interface IDelegateToSchemaOptions<TContext = Record<string, any>, TArgs 
   transforms?: Array<Transform<any, TContext>>;
   transformedSchema?: GraphQLSchema;
   validateRequest?: boolean;
-  skipTypeMerging?: boolean;
 }
 
 export interface IDelegateRequestOptions<TContext = Record<string, any>, TArgs = Record<string, any>>
@@ -151,32 +151,29 @@ export interface SubschemaConfig<K = any, V = any, C = K, TContext = Record<stri
   createProxyingResolver?: CreateProxyingResolverFn<TContext>;
   rootValue?: any;
   transforms?: Array<Transform<any, TContext>>;
-  merge?: Record<string, MergedTypeConfig<any, any, TContext>>;
+  merge?: Record<string, MergedTypeConfig<any, TContext>>;
   executor?: Executor<TContext>;
   batch?: boolean;
   batchingOptions?: BatchingOptions<K, V, C>;
 }
 
-export interface MergedTypeConfig<K = any, V = any, TContext = Record<string, any>>
-  extends MergedTypeEntryPoint<K, V, TContext> {
+export interface MergedTypeConfig<K = any, TContext = Record<string, any>> extends MergedTypeEntryPoint<K, TContext> {
   entryPoints?: Array<MergedTypeEntryPoint>;
   fields?: Record<string, MergedFieldConfig>;
   computedFields?: Record<string, { selectionSet?: string }>;
   canonical?: boolean;
 }
 
-export interface MergedTypeEntryPoint<K = any, V = any, TContext = Record<string, any>>
-  extends MergedTypeResolverOptions<K, V> {
+export interface MergedTypeEntryPoint<K = any, TContext = Record<string, any>> extends MergedTypeResolverOptions<K> {
   selectionSet?: string;
   key?: (originalResult: any) => K;
   resolve?: MergedTypeResolver<TContext>;
 }
 
-export interface MergedTypeResolverOptions<K = any, V = any> {
+export interface MergedTypeResolverOptions<K = any> {
   fieldName?: string;
   args?: (originalResult: any) => Record<string, any>;
   argsFromKeys?: (keys: ReadonlyArray<K>) => Record<string, any>;
-  valuesFromResults?: (results: any, keys: ReadonlyArray<K>) => Array<V>;
 }
 
 export interface MergedFieldConfig {

@@ -19,20 +19,21 @@ import { DelegationContext, SubschemaConfig } from './types';
 import { createExternalObject } from './externalObjects';
 import { mergeDataAndErrors } from './mergeDataAndErrors';
 
-export function externalValueFromResult(result: ExecutionResult, delegationContext: DelegationContext): any {
+export function externalValueFromResult(result: ExecutionResult, delegationContext: DelegationContext<any>): any {
   const {
     context,
     info,
     fieldName: responseKey = getResponseKey(info),
     subschema,
     returnType = getReturnType(info),
+    onLocatedError,
   } = delegationContext;
 
   const data = result.data?.[responseKey];
   const errors = result.errors ?? [];
   const initialPath = info ? responsePathAsArray(info.path) : [];
 
-  const { data: newData, unpathedErrors } = mergeDataAndErrors(data, errors);
+  const { data: newData, unpathedErrors } = mergeDataAndErrors(data, errors, onLocatedError);
 
   return createExternalValue(newData, unpathedErrors, initialPath, subschema, context, info, returnType);
 }
